@@ -1,44 +1,33 @@
+mod manifest;
+use digest::Digest;
+use sha2::{Sha256, Sha384, Sha512, Sha512_256};
 use std::io::{stdin, stdout, Read, Write};
 
-use clap::Parser;
-
-use digest::Digest;
-
-use sha2::{Sha256, Sha512, Sha512_256};
-
-const NAME: &str = "HSum";
-
-const VERSION: &str = "0.0.1";
-
-const AUTHOR: &str = "flucium <flucium@flucium.net>";
-
-const ABOUT: &str = "A simple cli tool get hash digest from stdin";
+use clap::{Parser, ValueEnum};
 
 #[derive(Debug, Clone, Parser)]
-#[clap(name = NAME, version = VERSION, author = AUTHOR, about = ABOUT)]
+#[clap(name = manifest::NAME, version = manifest::VERSION, author = manifest::AUTHOR, about = manifest::ABOUT)]
 struct Args {
-    #[clap(long("hash"), short('h'), alias("hash"), default_value("sha256"), 
-    possible_values(&["sha256", "sha512","sha512_256"]))]
-    hash_algorithm: String,
+    #[clap(long("hash"), alias("algorithm"), default_value = "sha256")]
+    hash_algorithm: HashAlgorithm,
 
     #[clap(long("uppercase"), short('u'), alias("upper"))]
-    upper_case: Option<bool>,
+    uppercase: Option<bool>,
 }
 
-fn read() -> Vec<u8> {
-    let mut buffer = Vec::new();
+#[derive(Debug, Clone, Parser, ValueEnum)]
+enum HashAlgorithm {
+    #[clap(alias = "sha2", alias = "sha256")]
+    Sha256,
 
-    if let Err(err) = stdin().read_to_end(&mut buffer) {
-        panic!("Error: {}", err.to_string());
-    }
+    #[clap(alias = "sha384")]
+    Sha384,
 
-    buffer
-}
+    #[clap(alias = "sha512")]
+    Sha512,
 
-fn write(bytes: impl AsRef<[u8]>) {
-    if let Err(err) = stdout().write_all(bytes.as_ref()) {
-        panic!("Error: {}", err.to_string());
-    }
+    #[clap(alias = "sha512/256", alias = "sha512-256", alias = "sha512_256")]
+    Sha512_256,
 }
 
 fn encode_hex(bytes: impl AsRef<[u8]>, is_uppercase: bool) -> String {
@@ -59,27 +48,35 @@ fn encode_hex(bytes: impl AsRef<[u8]>, is_uppercase: bool) -> String {
     buffer
 }
 
-fn hash_digest(algorithm: &str, bytes: &[u8]) -> Vec<u8> {
-    let digest: Vec<u8> = match algorithm {
-        "sha256" => Sha256::digest(&bytes).to_vec(),
-        "sha512" => Sha512::digest(&bytes).to_vec(),
-        "sha512_256" => Sha512_256::digest(&bytes).to_vec(),
-        _ => {
-            panic!("{}: invalid hash algorithm", algorithm);
-        }
-    };
+fn read() -> Vec<u8> {
+    let mut buffer = Vec::new();
 
-    digest
+    if let Err(err) = stdin().read_to_end(&mut buffer) {
+        panic!("Error: {}", err.to_string());
+    }
+
+    buffer
+}
+
+fn write(bytes: impl AsRef<[u8]>) {
+    if let Err(err) = stdout().write_all(bytes.as_ref()) {
+        panic!("Error: {}", err.to_string());
+    }
 }
 
 fn main() {
-    let bytes = read();
-
     let args = Args::parse();
 
-    let digest = hash_digest(&args.hash_algorithm, &bytes);
+    let bytes = read();
 
-    let hex = encode_hex(digest, args.upper_case.unwrap_or(false));
+    let hash: Vec<u8> = match args.hash_algorithm {
+        HashAlgorithm::Sha256 => Sha256::digest(&bytes).to_vec(),
+        HashAlgorithm::Sha384 => Sha384::digest(&bytes).to_vec(),
+        HashAlgorithm::Sha512 => Sha512::digest(&bytes).to_vec(),
+        HashAlgorithm::Sha512_256 => Sha512_256::digest(&bytes).to_vec(),
+    };
+
+    let hex = encode_hex(hash, args.uppercase.unwrap_or(false));
 
     write(hex);
 }
