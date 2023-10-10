@@ -1,7 +1,7 @@
 mod manifest;
 use digest::Digest;
 use sha2::{Sha256, Sha384, Sha512, Sha512_256};
-use std::io::{stdin, stdout, Read, Write};
+use std::io::{stdin, stdout, BufReader, Read, Write};
 
 use clap::{Parser, ValueEnum};
 
@@ -51,7 +51,7 @@ fn encode_hex(bytes: impl AsRef<[u8]>, is_uppercase: bool) -> String {
 fn read() -> Vec<u8> {
     let mut buffer = Vec::new();
 
-    if let Err(err) = stdin().read_to_end(&mut buffer) {
+    if let Err(err) = BufReader::new(stdin()).read_to_end(&mut buffer) {
         panic!("Error: {}", err.to_string());
     }
 
