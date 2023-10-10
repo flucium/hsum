@@ -1,6 +1,13 @@
 # HSum
 A simple cli tool get hash digest from stdin.
 
+## Supported algorithms
+* SHA2
+  * SHA256
+  * SHA384
+  * SHA512
+  * SHA512-256
+
 # Build
 ```bash
 zsh ./build.sh release
