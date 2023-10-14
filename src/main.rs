@@ -1,5 +1,6 @@
 mod manifest;
 use digest::Digest;
+use sha1::Sha1;
 use sha2::{Sha256, Sha384, Sha512, Sha512_256};
 use sha3::{Sha3_256, Sha3_384, Sha3_512};
 use std::io::{stdin, stdout, BufReader, Read, Write};
@@ -18,6 +19,9 @@ struct Args {
 
 #[derive(Debug, Clone, Parser, ValueEnum)]
 enum HashAlgorithm {
+    #[clap(alias = "sha1")]
+    Sha1,
+
     #[clap(alias = "sha2", alias = "sha256")]
     Sha256,
 
@@ -80,6 +84,7 @@ fn main() {
     let bytes = read();
 
     let hash: Vec<u8> = match args.hash_algorithm {
+        HashAlgorithm::Sha1 => Sha1::digest(&bytes).to_vec(),
         HashAlgorithm::Sha256 => Sha256::digest(&bytes).to_vec(),
         HashAlgorithm::Sha384 => Sha384::digest(&bytes).to_vec(),
         HashAlgorithm::Sha512 => Sha512::digest(&bytes).to_vec(),

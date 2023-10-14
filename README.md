@@ -8,6 +8,10 @@ Currently, only stdin/stdout are supported for input/output.
 In the future, we may support full file manipulation.
 
 ## Supported algorithms  
+- MD5
+  - [ ] MD5
+- SHA1
+  - [x] SHA1
 - SHA2
   - [x] SHA256
   - [x] SHA384
