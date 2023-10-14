@@ -38,7 +38,7 @@ enum HashAlgorithm {
     #[clap(alias = "sha512/256", alias = "sha512-256", alias = "sha512_256")]
     Sha512_256,
 
-    #[clap(alias = "sha3-256", alias = "sha3_256")]
+    #[clap(alias = "sha3" , alias = "sha3-256", alias = "sha3_256")]
     Sha3_256,
 
     #[clap(alias = "sha3-384", alias = "sha3_384")]
