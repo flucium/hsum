@@ -21,9 +21,9 @@ In the future, we may support full file manipulation.
   - [x] SHA512-256
 - SHA3
   - [ ] SHA3-224 (Under consideration.) 
-  - [ ] SHA3-256
-  - [ ] SHA3-384
-  - [ ] SHA3-512
+  - [x] SHA3-256
+  - [x] SHA3-384
+  - [x] SHA3-512
   - [ ] SHAKE128 (Under consideration.)
   - [ ] SHAKE256 (Under consideration.)
 - KangarooTwelve

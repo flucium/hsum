@@ -1,6 +1,7 @@
 mod manifest;
 use digest::Digest;
 use sha2::{Sha256, Sha384, Sha512, Sha512_256};
+use sha3::{Sha3_256, Sha3_384, Sha3_512};
 use std::io::{stdin, stdout, BufReader, Read, Write};
 
 use clap::{Parser, ValueEnum};
@@ -28,6 +29,15 @@ enum HashAlgorithm {
 
     #[clap(alias = "sha512/256", alias = "sha512-256", alias = "sha512_256")]
     Sha512_256,
+
+    #[clap(alias = "sha3-256", alias = "sha3_256")]
+    Sha3_256,
+
+    #[clap(alias = "sha3-384", alias = "sha3_384")]
+    Sha3_384,
+
+    #[clap(alias = "sha3-512", alias = "sha3_512")]
+    Sha3_512,
 }
 
 fn encode_hex(bytes: impl AsRef<[u8]>, is_uppercase: bool) -> String {
@@ -74,6 +84,9 @@ fn main() {
         HashAlgorithm::Sha384 => Sha384::digest(&bytes).to_vec(),
         HashAlgorithm::Sha512 => Sha512::digest(&bytes).to_vec(),
         HashAlgorithm::Sha512_256 => Sha512_256::digest(&bytes).to_vec(),
+        HashAlgorithm::Sha3_256 => Sha3_256::digest(&bytes).to_vec(),
+        HashAlgorithm::Sha3_384 => Sha3_384::digest(&bytes).to_vec(),
+        HashAlgorithm::Sha3_512 => Sha3_512::digest(&bytes).to_vec(),
     };
 
     let hex = encode_hex(hash, args.uppercase.unwrap_or(false));
