@@ -42,4 +42,6 @@ tar -zxvf *.tar.gz && rm *.tar.gz
 
 # Pipe
 ./hsum --hash sha512-256 -u true < README.md | cat
+
+echo hello | ./hsum --hash sha512-256 -u true
 ```
