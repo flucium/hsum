@@ -9,7 +9,7 @@ In the future, we may support full file manipulation.
 
 ## Supported algorithms  
 - MD5
-  - [ ] MD5
+  - [x] MD5
 - SHA1
   - [x] SHA1
 - SHA2
