@@ -38,7 +38,7 @@ enum HashAlgorithm {
     #[clap(alias = "sha512/256", alias = "sha512-256", alias = "sha512_256")]
     Sha512_256,
 
-    #[clap(alias = "sha3" , alias = "sha3-256", alias = "sha3_256")]
+    #[clap(alias = "sha3", alias = "sha3-256", alias = "sha3_256")]
     Sha3_256,
 
     #[clap(alias = "sha3-384", alias = "sha3_384")]
@@ -48,6 +48,7 @@ enum HashAlgorithm {
     Sha3_512,
 }
 
+/// Encode bytes to hex
 fn encode_hex(bytes: impl AsRef<[u8]>, is_uppercase: bool) -> String {
     let bytes = bytes.as_ref();
 
@@ -66,6 +67,7 @@ fn encode_hex(bytes: impl AsRef<[u8]>, is_uppercase: bool) -> String {
     buffer
 }
 
+/// Read bytes from stdin
 fn read() -> Vec<u8> {
     let mut buffer = Vec::new();
 
@@ -76,6 +78,7 @@ fn read() -> Vec<u8> {
     buffer
 }
 
+/// Write bytes to stdout
 fn write(bytes: impl AsRef<[u8]>) {
     if let Err(err) = stdout().write_all(bytes.as_ref()) {
         panic!("Error: {}", err.to_string());
@@ -83,10 +86,12 @@ fn write(bytes: impl AsRef<[u8]>) {
 }
 
 fn main() {
+    // Parse arguments
     let args = Args::parse();
 
     let bytes = read();
 
+    // Hash bytes with selected algorithm
     let hash: Vec<u8> = match args.hash_algorithm {
         HashAlgorithm::Md5 => Md5::digest(&bytes).to_vec(),
         HashAlgorithm::Sha1 => Sha1::digest(&bytes).to_vec(),
