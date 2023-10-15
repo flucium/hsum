@@ -16,10 +16,9 @@ if [ $1 = "release" ]; then
         exit 1
     fi
 
-
     version=`cat < Cargo.toml | grep -Po '(?<=^version = ")[^"]*(?=".*)'`
 
-    dir=hsum$version-$os-$arch
+    dir=hsum-$version-$os-$arch
 
     cargo build --release && \
     mkdir $dir && cp -r ./target/release/* $dir/ && cp ./LICENSE $dir/LICENSE && cp ./README.md $dir/README.md && \
