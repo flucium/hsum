@@ -1,6 +1,6 @@
 pub const NAME: &str = "HSum";
 
-pub const VERSION: &str = "0.0.1";
+pub const VERSION: &str = "1.0.0";
 
 pub const AUTHOR: &str = "flucium";
 
