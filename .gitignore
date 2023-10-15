@@ -16,4 +16,5 @@ Cargo.lock
 #
 .*
 **/.*
+hsum-*
 !.gitignore
