@@ -80,7 +80,12 @@ fn read() -> Vec<u8> {
 
 /// Write bytes to stdout
 fn write(bytes: impl AsRef<[u8]>) {
-    if let Err(err) = stdout().write_all(bytes.as_ref()) {
+    let mut stdout = stdout().lock();
+
+    if let Err(err) = stdout
+        .write_all(bytes.as_ref())
+        .and(stdout.write(b"\n").and(stdout.flush()))
+    {
         panic!("Error: {}", err.to_string());
     }
 }
