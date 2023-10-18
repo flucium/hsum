@@ -4,7 +4,10 @@ use md5::Md5;
 use sha1::Sha1;
 use sha2::{Sha256, Sha384, Sha512, Sha512_256};
 use sha3::{Sha3_256, Sha3_384, Sha3_512};
-use std::io::{stdin, stdout, BufReader, Read, Write};
+use std::{
+    io::{stdin, stdout, BufReader, Read, Write},
+    os::fd::{AsRawFd, FromRawFd},
+};
 
 use clap::{Parser, ValueEnum};
 
@@ -69,9 +72,18 @@ fn encode_hex(bytes: impl AsRef<[u8]>, is_uppercase: bool) -> String {
 
 /// Read bytes from stdin
 fn read() -> Vec<u8> {
-    let mut buffer = Vec::new();
+    let mut file = unsafe { std::fs::File::from_raw_fd(stdin().as_raw_fd()) };
 
-    if let Err(err) = BufReader::new(stdin()).read_to_end(&mut buffer) {
+    let file_len = match file.metadata() {
+        Err(_) => 1024,
+        Ok(metadata) => metadata.len() as usize,
+    };
+    
+    let mut reader = BufReader::new(&mut file);
+
+    let mut buffer = Vec::with_capacity(file_len);
+
+    if let Err(err) = reader.read_to_end(&mut buffer) {
         panic!("Error: {}", err.to_string());
     }
 
