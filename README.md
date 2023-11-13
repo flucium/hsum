@@ -1,3 +1,14 @@
+# Memo
+target file size: 4.19GB.
+
+**macOS MD5:**
+
+8.23s user 0.64s system 99% cpu 8.896 total
+
+**macOS HSum --hash md5:**
+
+6.18s user 0.48s system 99% cpu 6.672 total
+
 # hsum
 hsum is a simple cli tool that compute the hash digest of a file.
 
