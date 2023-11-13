@@ -1,15 +1,17 @@
 mod manifest;
-use digest::Digest;
+use clap::{Parser, ValueEnum};
+use digest::{generic_array::GenericArray, Digest, OutputSizeUser};
 use md5::Md5;
+use memmap2::MmapOptions;
 use sha1::Sha1;
 use sha2::{Sha256, Sha384, Sha512, Sha512_256};
 use sha3::{Sha3_256, Sha3_384, Sha3_512};
 use std::{
-    io::{stdin, stdout, BufReader, Read, Write},
+    
+    fs::File,
+    io::{stdin, stdout, Read, Write},
     os::fd::{AsRawFd, FromRawFd},
 };
-
-use clap::{Parser, ValueEnum};
 
 #[derive(Debug, Clone, Parser)]
 #[clap(name = manifest::NAME, version = manifest::VERSION, author = manifest::AUTHOR, about = manifest::ABOUT)]
@@ -70,26 +72,6 @@ fn encode_hex(bytes: impl AsRef<[u8]>, is_uppercase: bool) -> String {
     buffer
 }
 
-/// Read bytes from stdin
-fn read() -> Vec<u8> {
-    let mut file = unsafe { std::fs::File::from_raw_fd(stdin().as_raw_fd()) };
-
-    let file_len = match file.metadata() {
-        Err(_) => 1024,
-        Ok(metadata) => metadata.len() as usize,
-    };
-    
-    let mut reader = BufReader::new(&mut file);
-
-    let mut buffer = Vec::with_capacity(file_len);
-
-    if let Err(err) = reader.read_to_end(&mut buffer) {
-        panic!("Error: {}", err.to_string());
-    }
-
-    buffer
-}
-
 /// Write bytes to stdout
 fn write(bytes: impl AsRef<[u8]>) {
     let mut stdout = stdout().lock();
@@ -102,26 +84,138 @@ fn write(bytes: impl AsRef<[u8]>) {
     }
 }
 
-fn main() {
-    // Parse arguments
-    let args = Args::parse();
-
-    let bytes = read();
-
-    // Hash bytes with selected algorithm
-    let hash: Vec<u8> = match args.hash_algorithm {
-        HashAlgorithm::Md5 => Md5::digest(&bytes).to_vec(),
-        HashAlgorithm::Sha1 => Sha1::digest(&bytes).to_vec(),
-        HashAlgorithm::Sha256 => Sha256::digest(&bytes).to_vec(),
-        HashAlgorithm::Sha384 => Sha384::digest(&bytes).to_vec(),
-        HashAlgorithm::Sha512 => Sha512::digest(&bytes).to_vec(),
-        HashAlgorithm::Sha512_256 => Sha512_256::digest(&bytes).to_vec(),
-        HashAlgorithm::Sha3_256 => Sha3_256::digest(&bytes).to_vec(),
-        HashAlgorithm::Sha3_384 => Sha3_384::digest(&bytes).to_vec(),
-        HashAlgorithm::Sha3_512 => Sha3_512::digest(&bytes).to_vec(),
+fn compute<H: Digest>(
+    mut hasher: H,
+    mut file: &File,
+) -> std::result::Result<GenericArray<u8, <H as OutputSizeUser>::OutputSize>, String> {
+    let file_metadata = match file.metadata() {
+        Err(err) => Err(err.to_string())?,
+        Ok(metadata) => metadata,
     };
 
-    let hex = encode_hex(hash, args.uppercase.unwrap_or(false));
+    if file_metadata.is_file() == false {
+        // Todo!
+        Err(String::default())?
+    }
 
-    write(hex);
+    let file_len = file_metadata.len();
+
+    // It is adapted to the operation of BLAKE3 memmap2::MmapOptions as much as possible.
+    // https://github.com/BLAKE3-team/BLAKE3
+    // https://github.com/BLAKE3-team/BLAKE3/blob/master/LICENSE
+    // https://github.com/BLAKE3-team/BLAKE3/blob/master/src/io.rs
+    // https://github.com/BLAKE3-team/BLAKE3/blob/master/src/lib.rs
+    // https://ja.wikipedia.org/wiki/65536
+    if file_len == 0 || file_len > isize::MAX as u64 || file_len < 16 * 1024 {
+        let mut buf = [0; 65536];
+
+        while let Ok(n) = file.read(&mut buf) {
+            if n == 0 {
+                break;
+            }
+
+            hasher.update(&buf[..n]);
+
+            buf = [0; 65536];
+        }
+    } else {
+        hasher.update(
+            unsafe { MmapOptions::new().len(file_len as usize).map(file) }
+                .map_err(|err| String::from(err.to_string()))?,
+        );
+    }
+
+    let hash = hasher.finalize();
+
+    Ok(hash)
+}
+
+fn main() {
+    let args = Args::parse();
+
+    let stdin = unsafe { &std::fs::File::from_raw_fd(stdin().as_raw_fd()) };
+
+    match args.hash_algorithm {
+        HashAlgorithm::Md5 => match compute(Md5::new(), stdin) {
+            Err(err) => {
+                panic!("Error: {}", err.to_string());
+            }
+            Ok(hash) => {
+                let hex = encode_hex(hash, args.uppercase.unwrap_or(false));
+                write(hex);
+            }
+        },
+        HashAlgorithm::Sha1 => match compute(Sha1::new(), stdin) {
+            Err(err) => {
+                panic!("Error: {}", err.to_string());
+            }
+            Ok(hash) => {
+                let hex = encode_hex(hash, args.uppercase.unwrap_or(false));
+                write(hex);
+            }
+        },
+        HashAlgorithm::Sha256 => match compute(Sha256::new(), stdin) {
+            Err(err) => {
+                panic!("Error: {}", err.to_string());
+            }
+            Ok(hash) => {
+                let hex = encode_hex(hash, args.uppercase.unwrap_or(false));
+                write(hex);
+            }
+        },
+        HashAlgorithm::Sha384 => match compute(Sha384::new(), stdin) {
+            Err(err) => {
+                panic!("Error: {}", err.to_string());
+            }
+            Ok(hash) => {
+                let hex = encode_hex(hash, args.uppercase.unwrap_or(false));
+                write(hex);
+            }
+        },
+        HashAlgorithm::Sha512 => match compute(Sha512::new(), stdin) {
+            Err(err) => {
+                panic!("Error: {}", err.to_string());
+            }
+            Ok(hash) => {
+                let hex = encode_hex(hash, args.uppercase.unwrap_or(false));
+                write(hex);
+            }
+        },
+        HashAlgorithm::Sha512_256 => match compute(Sha512_256::new(), stdin) {
+            Err(err) => {
+                panic!("Error: {}", err.to_string());
+            }
+            Ok(hash) => {
+                let hex = encode_hex(hash, args.uppercase.unwrap_or(false));
+                write(hex);
+            }
+        },
+        HashAlgorithm::Sha3_256 => match compute(Sha3_256::new(), stdin) {
+            Err(err) => {
+                panic!("Error: {}", err.to_string());
+            }
+            Ok(hash) => {
+                let hex = encode_hex(hash, args.uppercase.unwrap_or(false));
+                write(hex);
+            }
+        },
+        HashAlgorithm::Sha3_384 => match compute(Sha3_384::new(), stdin) {
+            Err(err) => {
+                panic!("Error: {}", err.to_string());
+            }
+            Ok(hash) => {
+                let hex = encode_hex(hash, args.uppercase.unwrap_or(false));
+                write(hex);
+            }
+        },
+        HashAlgorithm::Sha3_512 => match compute(Sha3_512::new(), stdin) {
+            Err(err) => {
+                panic!("Error: {}", err.to_string());
+            }
+            Ok(hash) => {
+                let hex = encode_hex(hash, args.uppercase.unwrap_or(false));
+                write(hex);
+            }
+        },
+    };
 }
