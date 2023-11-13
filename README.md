@@ -32,6 +32,8 @@ In the future, we may support full file manipulation.
   - [x] SHA3-256
   - [x] SHA3-384
   - [x] SHA3-512
+- BLAKE3
+  - [ ] ...
   
 # Build
 ```bash
