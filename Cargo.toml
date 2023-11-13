@@ -6,4 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tokio = {version="1.33.0", features = ["full"] }
+sha2 = {version="0.10.8",features=[]}
+blake3 = {version="1.5.0",features=["mmap"]}
+memmap2 = "0.9.0"
+digest = "0.10.7"
