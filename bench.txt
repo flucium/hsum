@@ -1,0 +1,16 @@
+Simple
+HSum MD5 vs macOS MD5
+0.27s user 0.03s system 71% cpu 0.416 total
+0.38s user 0.04s system 98% cpu 0.427 total
+
+0.27s user 0.01s system 98% cpu 0.292 total
+0.38s user 0.04s system 97% cpu 0.431 total
+
+0.26s user 0.02s system 81% cpu 0.344 total
+0.39s user 0.04s system 95% cpu 0.442 total
+
+1.16s user 0.05s system 92% cpu 1.298 total
+1.70s user 0.18s system 97% cpu 1.925 total
+
+1.16s user 0.04s system 99% cpu 1.212 total
+1.70s user 0.13s system 99% cpu 1.836 total
